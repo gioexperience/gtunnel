@@ -1,0 +1,113 @@
+#!/usr/bin/env php
+<?php
+
+/*  controlla se i tunnel sono attivi, e se anche uno solo non lo è, li riavvia tutti
+	lanciando tante volte la _maketunnel.sh
+*/
+
+$ip_server="xxx";
+$user = "xxxx";
+$password = "xxxx";
+
+$tunnels=array(
+	array("127.0.0.1",80,47080),
+);
+
+/* ********************************************************************************************************************* */
+
+
+function port_test($ip, $port) 
+{
+	$fp = @fsockopen($ip, $port, $errno, $errstr, 0.1);
+	if (!$fp) {
+		return false;
+	} else {
+		fclose($fp);
+		return true;
+	}
+}
+
+
+if( $argc>1 && $argv[1]=="start_single" )				//for internl use only
+{
+	//internal usage --->    ./gtunnel start_single    $host_in_lan    $portalocale    $portaremota
+	$host_in_lan=$argv[2];
+	$localport=$argv[3];
+	$remoteport=$argv[4];
+	
+	while(true)
+	{
+		echo "Start tunnel for {$host_in_lan}:{$localport}. Exposed on server $ip_server at port $remoteport\n";
+		$cmd="/usr/bin/sshpass -p '$password' /usr/bin/ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=1 -N -R {$ip_server}:{$remoteport}:{$host_in_lan}:{$localport} {$user}@{$ip_server}";
+		exec($cmd);
+		echo "..tunnel crashed\n";
+	}
+	die();
+}
+elseif( $argc>1 && $argv[1]=="kill" )
+{
+	echo "Kill all tunnels\n";
+	exec("pkill -f 'gtunnel start_single'");
+	exec("pkill -f '/usr/bin/sshpass'");
+	exec("pkill -f '/usr/bin/ssh'");
+}
+
+elseif( $argc>1 && $argv[1]=="start" )
+{
+	echo "Test all tunnels. If only one is not active... reload all...\n";
+	$ALL_ACTIVE=true;
+	foreach ($tunnels as $tunnel)
+	{
+		$host_in_lan=$tunnel[0];
+		$localport=$tunnel[1];
+		$remoteport=$tunnel[2];
+
+		$b=port_test($ip_server,$remoteport);
+		if( $b==false )
+		{
+			echo "Tunnel on $remoteport down. It's crashed?\n";
+			$ALL_ACTIVE=false;
+			break;
+		}
+		"Tunnel on $remoteport is up!\n";
+	}
+	if( $ALL_ACTIVE )
+	{
+		echo "All tunnels are active. Do nothing...\n\n";
+		die();
+	}
+	
+	echo "Kill all tunnels for a complete reload\n";
+	exec(__FILE__." kill");
+
+	foreach ($tunnels as $tunnel)
+	{
+		$localip=$tunnel[0];
+		$localport=$tunnel[1];
+		$remoteport=$tunnel[2];
+
+		$b=port_test($localip,$localport);
+		if( $b==false )
+		{
+			echo "Local port $localip:$localport not open. Skip...";
+			continue;
+		}
+		
+		echo "Starting tunnel from $localip:$localport and expose on $ip_server:$remoteport...\n";
+		exec(__FILE__." start_single $localip $localport $remoteport &");
+		sleep(5);
+	}
+
+	echo "Tunnels reloaded...\n\n";
+}
+else
+{
+	echo "\n";
+	echo "Usage:  ./gtunnel start     #for starting or reload all tunnels that will remains open\n";
+	echo "        ./gtunnel kill      #for killing all tunnels\n";
+	echo "\n";
+	die();
+}
+
+
+?>
