@@ -1,8 +1,10 @@
 #!/usr/bin/env php
 <?php
 
-/*  controlla se i tunnel sono attivi, e se anche uno solo non lo è, li riavvia tutti
-	lanciando tante volte la _maketunnel.sh
+/*    Usage:  ./gtunnel start     #for starting or reload all tunnels that will remains open
+              ./gtunnel kill      #for killing all tunnels
+	
+      see www.gioexperience.com for more details
 */
 
 $ip_server="";
