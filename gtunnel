@@ -5,12 +5,13 @@
 	lanciando tante volte la _maketunnel.sh
 */
 
-$ip_server="xxx";
-$user = "xxxx";
-$password = "xxxx";
+$ip_server="";
+$user = "";
+$password = "";
 
 $tunnels=array(
-	array("127.0.0.1",80,47080),
+	array("192.168.0.1",80,47081),
+	array("192.168.0.3",80,47080),
 );
 
 /* ********************************************************************************************************************* */
@@ -39,6 +40,7 @@ if( $argc>1 && $argv[1]=="start_single" )				//for internl use only
 	{
 		echo "Start tunnel for {$host_in_lan}:{$localport}. Exposed on server $ip_server at port $remoteport\n";
 		$cmd="/usr/bin/sshpass -p '$password' /usr/bin/ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=1 -N -R {$ip_server}:{$remoteport}:{$host_in_lan}:{$localport} {$user}@{$ip_server}";
+		echo "exec] $cmd \n";
 		exec($cmd);
 		echo "..tunnel crashed\n";
 	}
@@ -69,7 +71,7 @@ elseif( $argc>1 && $argv[1]=="start" )
 			$ALL_ACTIVE=false;
 			break;
 		}
-		"Tunnel on $remoteport is up!\n";
+		echo "Tunnel on $remoteport is up!\n";
 	}
 	if( $ALL_ACTIVE )
 	{
@@ -94,7 +96,9 @@ elseif( $argc>1 && $argv[1]=="start" )
 		}
 		
 		echo "Starting tunnel from $localip:$localport and expose on $ip_server:$remoteport...\n";
-		exec(__FILE__." start_single $localip $localport $remoteport &");
+		$cmd=__FILE__." start_single $localip $localport $remoteport";
+		echo "exec] $cmd \n";
+		shell_exec("$cmd > /dev/null &");
 		sleep(5);
 	}
 
