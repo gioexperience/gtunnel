@@ -3,6 +3,18 @@
 
 I make this script because my RaspberryPI at home is behind an internet connection that not offer to me IP. This script (in *php language*) making tunnels direct to a public server and expose a local port to a remote port. In this way you can connect to a remote server to the remote port.... and you can connect to the local raspberry in the local port.
 
+## Create user on remote server and connect ##
+In the remote server you have to create the user. I suggest a user like this
+
+```console
+root@remoteserver:~ $ adduser tunnelssh
+```
+After this, from you RaspberryPI (or local pc), connect at least once manually for approve certificate ecc.
+
+```console
+ssh remoteuser@1.1.1.1
+```
+
 ## Install something and understand schema ##
 
 This script want php-cli, and sshpass
