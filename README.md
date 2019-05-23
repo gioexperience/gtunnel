@@ -5,11 +5,40 @@ I make this script because my RaspberryPI at home is behind an internet connecti
 
 ## Installing PHP ##
 
-This script want php-cli installed
+This script want php-cli
 
-'''console
-sudo apt-get install php
-'''
+```console
+foo@bar:~ $ sudo apt-get install php
+```
+You can see my blog for major details... www.gioexperience.com/xxxx
 
+## Usage for create tunnels ##
 
+The first usage **start** create all tunnels and launch in background some process for keep it up. The main process NOT REMAIN in background...
+
+```console
+foo@bar:~$ ./gtunnel start
+Test all tunnels. If only one is not active... reload all...
+Tunnel on 47081 down. It's crashed?
+Kill all tunnels for a complete reload
+Starting tunnel from 192.168.0.1:80 and expose on xx.xx.xx.xx:47081...
+exec] /home/pi/gtunnel start_single 192.168.0.1 80 47081
+Starting tunnel from 192.168.0.3:80 and expose on xx.xx.xx.xx:47080...
+exec] /home/pi/gtunnel start_single 192.168.0.3 80 47080
+Tunnels reloaded...
+
+foo@bar:~$
+```
+
+If you re-launch this **start**, the script check tunnels. If these tunnels are up, do nothing. If one tunnel is down, reload all.
+
+```console
+foo@bar:~$ ./gtunnel start
+Test all tunnels. If only one is not active... reload all...
+Tunnel on 47081 is up!
+Tunnel on 47080 is up!
+All tunnels are active. Do nothing...
+
+foo@bar:~$
+```
 
