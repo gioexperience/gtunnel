@@ -3,14 +3,37 @@
 
 I make this script because my RaspberryPI at home is behind an internet connection that not offer to me IP. This script (in *php language*) making tunnels direct to a public server and expose a local port to a remote port. In this way you can connect to a remote server to the remote port.... and you can connect to the local raspberry in the local port.
 
-## Installing PHP ##
+## Install something and understand schema ##
 
-This script want php-cli
+This script want php-cli, and sshpass
 
 ```console
-foo@bar:~ $ sudo apt-get install php
+foo@bar:~ $ sudo apt-get install -y sshpass php
 ```
 You can see my blog for major details... www.gioexperience.com/xxxx
+
+
+## Modify and insert your data ##
+
+Obviosly you have to put into script some important things
+- remote ip server (public ip)
+- user on remote server (for login ssh)
+- password for the user
+- all tunnels in a php array
+
+Open the script you can see
+
+```php
+$ip_server="";
+$user = "";
+$password = "";
+$tunnels=array(
+	array("192.168.0.1",80,47081),
+	array("192.168.0.3",80,47080),
+);
+```
+
+Modify it with your data.
 
 ## Usage for create tunnels ##
 
@@ -41,4 +64,24 @@ All tunnels are active. Do nothing...
 
 foo@bar:~$
 ```
+## Usage for kill all tunnels ##
+
+The second usage is for kill al tunnels. Is useful for debug or other things. With one command you can kill ALL TUNNELS, ALL ssh process etc.
+
+```console
+pi@zm:~$ ./gtunnel kill
+Kill all tunnels
+pi@zm:~$
+```
+## Put gtunnel into crontab ##
+
+The best use of this script is use in crontab. I have execute it every 5 minutes.
+
+```console
+pi@zm:~$ crontab -e
+
+#add this line
+* * * * * /home/pi/gtunnel start
+```
+
 
