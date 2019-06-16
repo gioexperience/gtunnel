@@ -12,8 +12,7 @@ $user = "";
 $password = "";
 
 $tunnels=array(
-	array("192.168.0.1",80,47081),
-	array("192.168.0.3",80,47080),
+	array("192.168.0.1",80,17080),		//silvano web
 );
 
 /* ********************************************************************************************************************* */
@@ -50,19 +49,41 @@ if( $argc>1 && $argv[1]=="start_single" )				//for internl use only
 }
 elseif( $argc>1 && $argv[1]=="kill" )
 {
-	echo "Kill all tunnels\n";
-	exec("pkill -f 'gtunnel start_single'");
+	//kill gtunnel process on specific port
+	$remoteport=intval($argv[2]);
+	
+	$tun=null;
+	foreach($tunnels as $tunnel)
+		if( $tunnel[2]==$remoteport ) $tun=$tunnel;
+	
+	
+	echo "Kill tunnel on remote port $remoteport\n";
+
+	$cmd="pkill -f 'gtunnel start_single ".$tun[0]." ".$tun[1]." ".$tun[2]."'";
+	echo "$cmd\n";
+	exec($cmd);
+
+	$cmd="pkill -f '{$ip_server}:{$remoteport}'";
+	echo "$cmd\n";
+	exec($cmd);
+	die();
+}
+elseif( $argc>1 && $argv[1]=="killall" )
+{
+	//kill all gtunnel
+	echo "Kill all tunnel\n";
 	exec("pkill -f '/usr/bin/sshpass'");
 	exec("pkill -f '/usr/bin/ssh'");
+	exec("pkill -f 'gtunnel'");
+	die();
 }
 
 elseif( $argc>1 && $argv[1]=="start" )
 {
-	echo "Test all tunnels. If only one is not active... reload all...\n";
-	$ALL_ACTIVE=true;
+	echo "Test all tunnels...\n";
 	foreach ($tunnels as $tunnel)
 	{
-		$host_in_lan=$tunnel[0];
+		$localip=$tunnel[0];
 		$localport=$tunnel[1];
 		$remoteport=$tunnel[2];
 
@@ -70,38 +91,17 @@ elseif( $argc>1 && $argv[1]=="start" )
 		if( $b==false )
 		{
 			echo "Tunnel on $remoteport down. It's crashed?\n";
-			$ALL_ACTIVE=false;
-			break;
-		}
-		echo "Tunnel on $remoteport is up!\n";
-	}
-	if( $ALL_ACTIVE )
-	{
-		echo "All tunnels are active. Do nothing...\n\n";
-		die();
-	}
-	
-	echo "Kill all tunnels for a complete reload\n";
-	exec(__FILE__." kill");
+			exec(__FILE__." kill $remoteport");
 
-	foreach ($tunnels as $tunnel)
-	{
-		$localip=$tunnel[0];
-		$localport=$tunnel[1];
-		$remoteport=$tunnel[2];
-
-		$b=port_test($localip,$localport);
-		if( $b==false )
-		{
-			echo "Local port $localip:$localport not open. Skip...";
-			continue;
+			
+			echo "Starting tunnel from $localip:$localport and expose on $ip_server:$remoteport...\n";
+			$cmd=__FILE__." start_single $localip $localport $remoteport";
+			echo "exec] $cmd \n";
+			shell_exec("$cmd > /dev/null &");
+			sleep(5);
 		}
-		
-		echo "Starting tunnel from $localip:$localport and expose on $ip_server:$remoteport...\n";
-		$cmd=__FILE__." start_single $localip $localport $remoteport";
-		echo "exec] $cmd \n";
-		shell_exec("$cmd > /dev/null &");
-		sleep(5);
+		else
+			echo "Tunnel on $remoteport is up! Do nothing...\n";
 	}
 
 	echo "Tunnels reloaded...\n\n";
