@@ -81,7 +81,7 @@ foo@bar:~$
 The second usage is for kill al tunnels. Is useful for debug or other things. With one command you can kill ALL TUNNELS, ALL ssh process etc.
 
 ```console
-pi@zm:~$ ./gtunnel kill
+pi@zm:~$ ./gtunnel killall
 Kill all tunnels
 pi@zm:~$
 ```
